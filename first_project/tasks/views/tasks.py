@@ -8,13 +8,7 @@ from tasks.models import Task, Category
 from tasks.serializers import (
     TaskSerializer,
     TaskModelSerializer,
-    CategorySerializer
     )
-
-
-def home_view(request):
-    print("request",  request)
-    return HttpResponse("Hello from django")
 
 
 def create_task(request):
@@ -97,67 +91,19 @@ def create_task_view(request):
 @api_view(["GET"])
 def get_tasks(request):
 
+    category_id = request.GET.get("category_id")
+
     tasks = Task.objects.all()
+
+    if category_id:
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExists:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        tasks = category.task_set.all()  # the same as
+        # tasks = Task.objects.filter(category=category)
 
     serializer = TaskModelSerializer(tasks, many=True)
 
     return Response(serializer.data)
-
-
-@api_view(["POST"])
-def create_category(request):
-    serializer = CategorySerializer(data=request.data)
-
-    serializer.is_valid(raise_exception=True)
-
-    serializer.save()
-
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-@api_view(["GET"])
-def get_categories(request):
-
-    categories = Category.objects.all()
-
-    serializer = CategorySerializer(categories, many=True)
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(["PATCH"])
-def update_category(request, category_id):
-
-    try:
-        category = Category.objects.get(id=category_id)
-    except Category.DoesNotExist:
-        return Response({"message": "Category does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-    serializer = CategorySerializer(category, data=request.data)
-
-    serializer.is_valid(raise_exception=True)
-
-    serializer.save()
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(["PATCH"])
-def update_category(request, category_id):
-
-    try:
-        Category.objects.get(id=category_id).delete()
-    except Category.DoesNotExist:
-        return Response({"message": "Category does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-
-
-
-

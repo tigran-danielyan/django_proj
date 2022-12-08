@@ -14,8 +14,8 @@ class TaskModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         # fields = "__all__"
-        # fields = ("id", "name", "description", "status", "created_at")
-        exclude = ("id",)
+        fields = ("id", "name", "description", "status", "created_at")
+        # exclude = ("id",)
 
 
 class CategorySerializer(serializers.ModelSerializer):
