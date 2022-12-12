@@ -7,8 +7,8 @@ from rest_framework import status
 from tasks.models import Task, Category
 from tasks.serializers import (
     TaskSerializer,
-    TaskModelSerializer,
-    )
+    TaskModelSerializer, TaskUpdateModelSerializer, TaskModelListSerializer,
+)
 
 
 def create_task(request):
@@ -36,16 +36,16 @@ def get_all_tasks(request):
     return HttpResponse(f"tasks, {tasks}")
 
 
-def update_task(request, task_id):
-
-    Task.objects.filter(id=task_id).update(name="updated_1")
-    task_ = Task.objects.filter(id=task_id).first()
-    # or
-    # task_ = Task.objects.get(id=task_id)
-    # task_.name = "updated"
-    # task_.save()
-
-    return HttpResponse(f"tasks, {task_}")
+# def update_task(request, task_id):
+#
+#     Task.objects.filter(id=task_id).update(name="updated_1")
+#     task_ = Task.objects.filter(id=task_id).first()
+#     # or
+#     # task_ = Task.objects.get(id=task_id)
+#     # task_.name = "updated"
+#     # task_.save()
+#
+#     return HttpResponse(f"tasks, {task_}")
 
 
 @api_view(["GET"])
@@ -104,6 +104,24 @@ def get_tasks(request):
         tasks = category.task_set.all()  # the same as
         # tasks = Task.objects.filter(category=category)
 
-    serializer = TaskModelSerializer(tasks, many=True)
+    serializer = TaskModelListSerializer(tasks, many=True)
+    # print(serializer.data)
 
     return Response(serializer.data)
+
+
+@api_view(["PATCH"])
+def update_task(request, task_id):
+
+    try:
+        task = Task.objects.get(id=task_id)
+    except Task.DoesNotExist:
+        return Response({"message": "Task does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = TaskUpdateModelSerializer(task, data=request.data)
+
+    serializer.is_valid(raise_exception=True)
+
+    serializer.save()
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
