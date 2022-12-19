@@ -9,10 +9,9 @@ urlpatterns = [
 
 
 api_urls = [
-    path("tasks/<int:task_id>/", tasks.get_task),
-    path("tasks/<int:task_id>/update/", tasks.update_task),
-    path("tasks/add/", tasks.create_task_view),
-    path("tasks/list/", tasks.get_tasks),
+    path("", tasks.TaskApiView.as_view()),
+    path("find/", tasks.TaskFindView.as_view()),
+    path("<int:task_id>/", tasks.TaskDetailView.as_view()),
     # path("categories/create/", categories.create_category),
     # path("categories/", categories.get_categories),
     path("categories/", categories.CategoryGenericView.as_view()),

@@ -3,10 +3,11 @@ from django.shortcuts import HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from tasks.models import Task, Category
 from tasks.serializers import (
-    TaskSerializer,
     TaskModelSerializer, TaskUpdateModelSerializer, TaskModelListSerializer,
 )
 
@@ -125,3 +126,83 @@ def update_task(request, task_id):
     serializer.save()
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TaskApiView(APIView):
+    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        print(request.user)
+
+        # task_list = Task.objects.filter(user=request.user)
+        task_list = request.user.task_set.all()
+        serializer = TaskModelSerializer(task_list, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TaskModelSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save(user=request.user)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TaskDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, task_id):
+        task = Task.objects.filter(id=task_id, user=request.user).first()
+        if not task:
+            return Response({"message": "not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TaskModelSerializer(task)
+
+        return Response(serializer.data)
+
+    def patch(self, request, task_id):
+
+        task = Task.objects.filter(id=task_id, user=request.user).first()
+
+        if not task:
+            return Response({"message": "not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TaskUpdateModelSerializer(task, data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, task_id):
+        task = Task.objects.filter(id=task_id, user=request.user).first()
+
+        if not task:
+            return Response({"message": "not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        task.delete()
+
+        return Response(status.HTTP_204_NO_CONTENT)
+
+
+class TaskFindView(APIView):
+    def get(self, request):
+        name = request.data.get("name")
+        description = request.data.get("description")
+
+        tasks = Task.objects.all()
+
+        if name:
+            tasks = Task.objects.filter(name__contains=name)
+
+        if description:
+            tasks = Task.objects.filter(description__contains=name)
+
+        serializer = TaskModelListSerializer(tasks, many=True)
+
+        return Response(serializer.data)
+
+
