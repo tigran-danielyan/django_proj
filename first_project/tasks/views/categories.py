@@ -131,3 +131,24 @@ class CategoryDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+
+
+"""3, 4
+ A recipe search app: This app would allow users to search for recipes based on ingredients, cuisine type,
+  or other criteria. It could include features like the ability to save favorite recipes,
+    and leave reviews for other users. top 10 recipes
+    
+
+1, 2 could include features like the ability to upload and share photos, send private messages, and create groups or communities.
+
+2. A social media platform that allows users to create profiles, share posts, and follow each other. This project can include features such as user authentication,
+ a feed of posts from the people the user follows,
+  and the ability to like and comment on posts.
+  Can block other user
+
+
+1. Vahe, Norayr, Ararat
+2. Mihran, Arthur, Natali
+3. Manushak, Ariga
+4. Garik, Davit
+"""

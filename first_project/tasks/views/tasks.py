@@ -10,6 +10,7 @@ from tasks.models import Task, Category
 from tasks.serializers import (
     TaskModelSerializer, TaskUpdateModelSerializer, TaskModelListSerializer,
 )
+from tasks.filters import TaskFilter
 
 
 def create_task(request):
@@ -137,7 +138,8 @@ class TaskApiView(APIView):
 
         # task_list = Task.objects.filter(user=request.user)
         task_list = request.user.task_set.all()
-        serializer = TaskModelSerializer(task_list, many=True)
+        filtered = TaskFilter(request.GET, task_list)
+        serializer = TaskModelSerializer(filtered.qs, many=True)
 
         return Response(serializer.data)
 

@@ -13,11 +13,11 @@ from users.serializers import UserSerializer
 
 
 class UserListCreateView(APIView):
-    queryset = User.objects.all()
+    model = User
     serializer_class = UserSerializer
 
     def get(self, request):
-        serializer = self.serializer_class(self.queryset, many=True)
+        serializer = self.serializer_class(self.model.objects.all(), many=True)
         return Response(serializer.data)
 
     def post(self, request):
