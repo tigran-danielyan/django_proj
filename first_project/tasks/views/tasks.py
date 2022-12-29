@@ -1,4 +1,5 @@
 from django.shortcuts import HttpResponse
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 # new
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -134,14 +135,24 @@ class TaskApiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print(request.user)
 
         # task_list = Task.objects.filter(user=request.user)
         task_list = request.user.task_set.all()
         filtered = TaskFilter(request.GET, task_list)
-        serializer = TaskModelSerializer(filtered.qs, many=True)
+        # paginator = LimitOffsetPagination()
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(filtered.qs, request)
+        paginator.get_next_link()
+        serializer = TaskModelSerializer(page, many=True)
 
-        return Response(serializer.data)
+        context = {
+            "data": serializer.data,
+            "next": paginator.get_next_link(),
+            "previous": paginator.get_previous_link()
+
+        }
+
+        return Response(context)
 
     def post(self, request):
         serializer = TaskModelSerializer(data=request.data)
